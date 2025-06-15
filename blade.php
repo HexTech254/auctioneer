@@ -1,0 +1,1 @@
+<a href="{{ route('layouts.condition', $auction->id) }}" class="flex w-full items-center py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white text-gray-700 dark:text-gray-200"> 

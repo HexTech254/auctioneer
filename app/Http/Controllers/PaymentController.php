@@ -6,123 +6,266 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class PaymentController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware('throttle:60,1'); // Rate limiting
+    }
+
     public function showPaymentForm()
     {
-        return view('payment.form');
+        $recentTransactions = Transaction::where('user_id', auth()->id())
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('payment.form', compact('recentTransactions'));
     }
 
     public function initiatePayment(Request $request)
     {
-        $request->validate([
-            'phone' => 'required|regex:/^254[0-9]{9}$/',
-            'amount' => 'required|numeric|min:1',
-        ]);
-
-        $transaction = Transaction::create([
-            'phone' => $request->phone,
-            'amount' => $request->amount,
-            'reference' => 'TRX' . time(),
-        ]);
-
         try {
+            $validator = Validator::make($request->all(), [
+                'phone' => 'required|regex:/^254[0-9]{9}$/',
+                'amount' => 'required|numeric|min:1',
+            ]);
+
+            if ($validator->fails()) {
+                return back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+
+            // Format phone number
+            $phone = $this->formatPhoneNumber($request->phone);
+            
+            // Get access token
             $accessToken = $this->getAccessToken();
-            $response = $this->sendStkPush($accessToken, $transaction);
+
+            // Generate timestamp
+            $timestamp = date('YmdHis');
+            
+            // Create transaction reference
+            $transactionRef = 'TRX' . $timestamp . rand(1000, 9999);
+
+            // Create transaction record
+            $transaction = Transaction::create([
+                'user_id' => auth()->id(),
+                'amount' => $request->amount,
+                'phone' => $phone,
+                'reference' => $transactionRef,
+                'status' => 'pending'
+            ]);
+
+            // Initiate STK Push
+            $response = $this->initiateSTKPush($accessToken, $transaction);
 
             if ($response->successful()) {
-                return redirect()->route('payment.status', $transaction->id)->with('success', 'Payment initiated. Please complete the transaction on your phone.');
-            } else {
-                Log::error('STK Push failed', ['response' => $response->json()]);
-                return back()->withErrors(['message' => 'Failed to initiate payment. Please try again.']);
+                $result = $response->json();
+                
+                if (isset($result['ResponseCode']) && $result['ResponseCode'] === '0') {
+                    // Update transaction with checkout request ID
+                    $transaction->update([
+                        'checkout_request_id' => $result['CheckoutRequestID'],
+                        'merchant_request_id' => $result['MerchantRequestID']
+                    ]);
+
+                    return redirect()
+                        ->route('payment.status', ['id' => $transaction->id])
+                        ->with('success', 'Please complete the payment on your phone.');
+                }
             }
+
+            throw new \Exception($response['errorMessage'] ?? 'STK push failed');
+
         } catch (\Exception $e) {
             Log::error('Payment initiation failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return back()->withErrors(['message' => 'An error occurred while processing your request. Please try again later.']);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to initiate payment: ' . $e->getMessage());
         }
     }
 
     private function getAccessToken()
     {
-        $consumerKey = config('services.mpesa.consumer_key');
-        $consumerSecret = config('services.mpesa.consumer_secret');
+        try {
+            $consumer_key = config('services.mpesa.consumer_key');
+            $consumer_secret = config('services.mpesa.consumer_secret');
 
-        $response = Http::withBasicAuth($consumerKey, $consumerSecret)
-            ->get('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials');
+            if (empty($consumer_key) || empty($consumer_secret)) {
+                throw new \Exception('M-Pesa credentials not configured');
+            }
 
-        if ($response->successful()) {
-            return $response->json()['access_token'];
-        } else {
-            Log::error('Failed to get access token', ['response' => $response->json()]);
-            throw new \Exception('Failed to get access token');
+            $credentials = base64_encode($consumer_key . ':' . $consumer_secret);
+
+            $response = Http::withOptions([
+                'verify' => false,
+                'timeout' => 30,
+            ])->withHeaders([
+                'Authorization' => 'Basic ' . $credentials,
+                'Content-Type' => 'application/json',
+            ])->get('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials');
+
+            if ($response->failed()) {
+                throw new \Exception('Failed to generate access token');
+            }
+
+            $result = $response->json();
+            
+            if (!isset($result['access_token'])) {
+                throw new \Exception('Access token not found in response');
+            }
+
+            return $result['access_token'];
+
+        } catch (\Exception $e) {
+            Log::error('Access token generation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
         }
     }
 
-    private function sendStkPush($accessToken, $transaction)
+    private function initiateSTKPush($accessToken, $transaction)
     {
-        $timestamp = now()->format('YmdHis');
-        $shortcode = config('services.mpesa.shortcode');
-        $passkey = config('services.mpesa.passkey');
-        $password = base64_encode($shortcode . $passkey . $timestamp);
+        try {
+            $timestamp = date('YmdHis');
+            $shortcode = config('services.mpesa.shortcode');
+            $passkey = config('services.mpesa.passkey');
+            
+            if (empty($shortcode) || empty($passkey)) {
+                throw new \Exception('M-Pesa configuration not set');
+            }
 
-        return Http::withToken($accessToken)
-            ->post('https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest', [
-                'BusinessShortCode' => $shortcode,
-                'Password' => $password,
-                'Timestamp' => $timestamp,
-                'TransactionType' => 'CustomerPayBillOnline',
-                'Amount' => $transaction->amount,
-                'PartyA' => $transaction->phone,
-                'PartyB' => $shortcode,
-                'PhoneNumber' => $transaction->phone,
-                'CallBackURL' => route('payment.callback'),
-                'AccountReference' => $transaction->reference,
-                'TransactionDesc' => 'Payment for goods/services',
+            $password = base64_encode($shortcode . $passkey . $timestamp);
+
+            Log::info('Initiating STK Push', [
+                'phone' => $transaction->phone,
+                'amount' => $transaction->amount,
+                'reference' => $transaction->reference
             ]);
+
+            return Http::withOptions([
+                'verify' => false,
+                'timeout' => 30,
+            ])->withToken($accessToken)
+                ->post('https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest', [
+                    'BusinessShortCode' => $shortcode,
+                    'Password' => $password,
+                    'Timestamp' => $timestamp,
+                    'TransactionType' => 'CustomerPayBillOnline',
+                    'Amount' => (int) $transaction->amount,
+                    'PartyA' => $transaction->phone,
+                    'PartyB' => $shortcode,
+                    'PhoneNumber' => $transaction->phone,
+                    'CallBackURL' => route('payment.callback'),
+                    'AccountReference' => $transaction->reference,
+                    'TransactionDesc' => 'Payment'
+                ]);
+
+        } catch (\Exception $e) {
+            Log::error('STK Push failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'transaction_id' => $transaction->id
+            ]);
+            throw $e;
+        }
     }
 
-    public function handleCallback(Request $request)
+    public function callback(Request $request)
     {
-        Log::info('M-Pesa callback received', ['data' => $request->all()]);
+        try {
+            Log::info('M-Pesa Callback Received', [
+                'data' => $request->all()
+            ]);
 
-        $callbackData = $request->json()->all();
+            $callbackData = $request->Body['stkCallback'] ?? null;
+            
+            if (!$callbackData) {
+                throw new \Exception('Invalid callback data');
+            }
 
-        if (isset($callbackData['Body']['stkCallback']['CallbackMetadata'])) {
-            $metadata = collect($callbackData['Body']['stkCallback']['CallbackMetadata']['Item']);
+            $transaction = Transaction::where('checkout_request_id', $callbackData['CheckoutRequestID'])->first();
+            
+            if (!$transaction) {
+                throw new \Exception('Transaction not found');
+            }
 
-            $mpesaReceiptNumber = $metadata->firstWhere('Name', 'MpesaReceiptNumber')['Value'];
-            $amount = $metadata->firstWhere('Name', 'Amount')['Value'];
-            $phoneNumber = $metadata->firstWhere('Name', 'PhoneNumber')['Value'];
-
-            $transaction = Transaction::where('phone', $phoneNumber)
-                ->where('amount', $amount)
-                ->where('status', 'pending')
-                ->latest()
-                ->first();
-
-            if ($transaction) {
+            if ($callbackData['ResultCode'] == 0) {
+                // Payment successful
                 $transaction->update([
                     'status' => 'completed',
-                    'mpesa_receipt_number' => $mpesaReceiptNumber,
+                    'mpesa_receipt_number' => $this->extractReceiptNumber($callbackData),
+                    'payment_date' => now(),
                 ]);
             } else {
-                Log::warning('Transaction not found for callback', ['data' => $callbackData]);
+                // Payment failed
+                $transaction->update([
+                    'status' => 'failed',
+                    'failure_reason' => $callbackData['ResultDesc']
+                ]);
             }
-        } else {
-            Log::error('Invalid callback data structure', ['data' => $callbackData]);
-        }
 
-        return response()->json(['ResultCode' => 0, 'ResultDesc' => 'Success']);
+            return response()->json(['ResultCode' => 0, 'ResultDesc' => 'Success']);
+
+        } catch (\Exception $e) {
+            Log::error('Callback Processing Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json(['ResultCode' => 1, 'ResultDesc' => 'Failed']);
+        }
     }
 
-    public function showPaymentStatus($id)
+    public function showStatus($id)
     {
         $transaction = Transaction::findOrFail($id);
+        
+        if ($transaction->user_id !== auth()->id()) {
+            abort(403);
+        }
+
         return view('payment.status', compact('transaction'));
     }
-}
 
+    private function formatPhoneNumber($phone)
+    {
+        // Remove any non-numeric characters
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        
+        // If the number starts with 0, replace it with 254
+        if (substr($phone, 0, 1) == '0') {
+            $phone = '254' . substr($phone, 1);
+        }
+        
+        // If the number doesn't start with 254, add it
+        if (substr($phone, 0, 3) != '254') {
+            $phone = '254' . $phone;
+        }
+        
+        return $phone;
+    }
+
+    private function extractReceiptNumber($callbackData)
+    {
+        if (isset($callbackData['CallbackMetadata']['Item'])) {
+            foreach ($callbackData['CallbackMetadata']['Item'] as $item) {
+                if ($item['Name'] === 'MpesaReceiptNumber') {
+                    return $item['Value'];
+                }
+            }
+        }
+        return null;
+    }
+}

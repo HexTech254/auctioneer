@@ -21,7 +21,7 @@
 
                 <div class="mb-4">
 
-                    <input type="text" name="username" id="username" placeholder="Username" class="bg-gray-100 border-2 w-full p-4 rounded-lg @error('username') border-red-500 @enderror" value="{{ old('username') }}">
+                    <input type="text" name="username" id="username" placeholder="Username/Auction company name" class="bg-gray-100 border-2 w-full p-4 rounded-lg @error('username') border-red-500 @enderror" value="{{ old('username') }}">
 
                     @error('username')
                         <div class="text-red-500 mt-2 text-sm">

@@ -4,17 +4,18 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateTransactionsTable extends Migration
 {
     public function up()
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->string('phone');
+            $table->foreignId('user_id')->constrained();
+            $table->foreignId('auction_id')->constrained();
             $table->decimal('amount', 10, 2);
-            $table->string('reference')->nullable();
-            $table->string('status')->default('pending');
-            $table->string('mpesa_receipt_number')->nullable();
+            $table->string('transaction_id')->unique();
+            $table->string('status');
+            $table->json('transaction_details')->nullable();
             $table->timestamps();
         });
     }
@@ -23,4 +24,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('transactions');
     }
-};
+}

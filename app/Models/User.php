@@ -44,9 +44,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-public function posts()
+public function auctions()
     {
-        return $this->hasMany(Post::class);
+        return $this->hasMany(Auction::class);
     }
 
     public function likes()

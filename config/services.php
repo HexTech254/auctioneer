@@ -35,5 +35,6 @@ return [
         'consumer_secret' => env('MPESA_CONSUMER_SECRET'),
         'shortcode' => env('MPESA_SHORTCODE'),
         'passkey' => env('MPESA_PASSKEY'),
+        'env' => env('MPESA_ENV', 'sandbox'),
     ],
 ];

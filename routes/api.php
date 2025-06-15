@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MpesaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,4 +17,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::middleware(['mpesa.ip'])->group(function () {
+    Route::post('/mpesa/validation', [MpesaController::class, 'validation']);
+    Route::post('/mpesa/confirmation', [MpesaController::class, 'confirmation']);
+    Route::post('/mpesa/callback', [MpesaController::class, 'callback']);
 });

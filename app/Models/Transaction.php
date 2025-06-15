@@ -10,11 +10,30 @@ class Transaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'phone',
+        'user_id',
+        'auction_id',
         'amount',
-        'reference',
+        'transaction_id',
         'status',
-        'mpesa_receipt_number',
+        'transaction_details'
     ];
+
+    protected $attributes = [
+        'status' => 'pending',
+    ];
+
+    protected $casts = [
+        'transaction_details' => 'array'
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function auction()
+    {
+        return $this->belongsTo(Auction::class);
+    }
 }
 

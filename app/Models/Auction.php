@@ -10,16 +10,26 @@ class Auction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'image',
+        'user_id',
         'title',
         'description',
         'auction_date',
-        'conditions',
+        'image',
+        'image2',
+        'image3',
+        'conditions'
     ];
 
     protected $casts = [
-        'conditions' => 'array',
+        'auction_date' => 'datetime',
+        'conditions' => 'array'
     ];
 
-
+    protected $dates = [
+        'auction_date',
+    ];
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
