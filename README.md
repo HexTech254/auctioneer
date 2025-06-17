@@ -89,3 +89,11 @@ Navigate to: `http://127.0.0.1:8000`
 ## Security Vulnerabilities
 
 If you discover a security vulnerability within Laravel, please send an e-mail to Steve Kiplangat via hexenterprize@gmail.com. All security vulnerabilities will be promptly addressed.
+
+# Hi there 👋
+
+I can help you integrate the M-Pesa Daraja online payment platform with Laravel!
+
+If you’d like to support my work, you can:
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-orange?style=for-the-badge&logo=buy-me-a-coffee&logoColor=white)](https://coff.ee/hextech254)
