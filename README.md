@@ -73,6 +73,7 @@ Navigate to: `http://127.0.0.1:8000`
 ![RegisterPage](https://github.com/HexTech254/auctioneer/blob/main/storage/images/registration_page.png)
 ## Auction Page:
 ![AuctionPage](https://github.com/HexTech254/auctioneer/blob/main/storage/images/auction_page.png)
+## Auction Page(after upload):
 ![AuctionPage](https://github.com/HexTech254/auctioneer/blob/main/storage/images/auction_page1.png)
 ## Upload Auction Page:
 ![Upload_AuctionPage](https://github.com/HexTech254/auctioneer/blob/main/storage/images/upload_auction_page.png)
