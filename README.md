@@ -36,12 +36,12 @@ M pesa Daraja Configuration
 
 Add to your .env:
 
--MPESA_ENV=sandbox # or production.
--MPESA_CONSUMER_KEY=your_consumer_key.
--MPESA_CONSUMER_SECRET=your_consumer_secret.
--MPESA_PASSKEY=your_passkey.
--MPESA_BUSINESS_SHORTCODE=your_shortcode.
--MPESA_CALLBACK_URL=https://yourdomain.com/callback.
+MPESA_ENV=sandbox # or production< br / >
+MPESA_CONSUMER_KEY=your_consumer_key< br / >
+MPESA_CONSUMER_SECRET=your_consumer_secret< br / >
+MPESA_PASSKEY=your_passkey< br / >
+MPESA_BUSINESS_SHORTCODE=your_shortcode< br / >
+MPESA_CALLBACK_URL=https://yourdomain.com/callback< br / >
 
 Install npm:
 
