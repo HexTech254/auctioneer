@@ -60,3 +60,22 @@ php artisan serve
 Navigate to: `http://127.0.0.1:8000`
 
 ## Preview:
+## Landing Page:
+![Landingpage](https://github.com/HexTech254/auctioneer/blob/main/storage/images/landing%20page.png)
+## Login Page:
+![LoginPage](https://github.com/HexTech254/auctioneer/blob/main/storage/images/login_page.png)
+## Register Page:
+![RegisterPage](https://github.com/HexTech254/auctioneer/blob/main/storage/images/registration_page.png)
+## Auction Page:
+![AuctionPage](https://github.com/HexTech254/auctioneer/blob/main/storage/images/auction_page.png)
+![AuctionPage](https://github.com/HexTech254/auctioneer/blob/main/storage/images/auction_page1.png)
+## Upload Auction Page:
+![Upload_AuctionPage](https://github.com/HexTech254/auctioneer/blob/main/storage/images/upload_auction_page.png)
+## Auction Conditions Page:
+![Auction_ConditionPage](https://github.com/HexTech254/auctioneer/blob/main/storage/images/auction_conditions.png)
+## View Auction Page:
+![View_AuctionPage](https://github.com/HexTech254/auctioneer/blob/main/storage/images/view_auction.png)
+## Payment Page:
+![PaymentPage](https://github.com/HexTech254/auctioneer/blob/main/storage/images/payment_form.png)
+## Responsive:
+![Responsive](https://github.com/HexTech254/auctioneer/blob/main/storage/images/responsive.png)
