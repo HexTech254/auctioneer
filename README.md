@@ -18,7 +18,7 @@ Daraja online payment provider platform has been intergrated allowing for m pesa
 - Node js - Handbook [here](https://nodejs.org/en/)
 - Git - Handbook [here](https://git-scm.com/)
 
-### Clone repository
+## Clone repository
 
 ```
 git clone https://github.com/HexTech254/auctioneer.git
@@ -32,10 +32,9 @@ cd auctioneer
 
 ## Setting Up The Project
 
-M pesa Daraja Configuration
+1.) M pesa Daraja Configuration
 
 Add to your .env:
-
 MPESA_ENV=sandbox # or production</br>  
 MPESA_CONSUMER_KEY=your_consumer_key</br>
 MPESA_CONSUMER_SECRET=your_consumer_secret</br>
@@ -43,13 +42,13 @@ MPESA_PASSKEY=your_passkey</br>
 MPESA_BUSINESS_SHORTCODE=your_shortcode</br>
 MPESA_CALLBACK_URL=https://yourdomain.com/callback</br>
 
-Install npm:
+2.) Install npm:
 
 ```
 npm install 
 ```
 
-Install composer:
+3.) Install composer:
 
 ```
 composer install 
