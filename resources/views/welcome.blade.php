@@ -18,7 +18,7 @@
   <nav x-data="{ open: false }" class="p-6 bg-white">
     <div class="container mx-auto flex justify-between items-center">
       <!-- Logo -->
-      <a href="/" class="text-lg font-bold">Payment</a>
+      <a href="/" class="text-lg font-bold">Auctioneer</a>
 
       <!-- Hamburger Menu for Small Screens -->
       <button 
