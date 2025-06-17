@@ -15,8 +15,8 @@ Daraja online payment provider platform has been intergrated allowing for m pesa
 
 ## Prerequisites
 
-- Node js - Handbook [here](https://git-scm.com/)
-- Git - Handbook [here](https://nodejs.org/en/)
+- Node js - Handbook [here](https://nodejs.org/en/)
+- Git - Handbook [here](https://git-scm.com/)
 
 ### Clone repository
 
@@ -36,12 +36,12 @@ M pesa Daraja Configuration
 
 Add to your .env:
 
-MPESA_ENV=sandbox # or production
-MPESA_CONSUMER_KEY=your_consumer_key
-MPESA_CONSUMER_SECRET=your_consumer_secret
-MPESA_PASSKEY=your_passkey
-MPESA_BUSINESS_SHORTCODE=your_shortcode
-MPESA_CALLBACK_URL=https://yourdomain.com/callback
+MPESA_ENV=sandbox # or production.
+MPESA_CONSUMER_KEY=your_consumer_key.
+MPESA_CONSUMER_SECRET=your_consumer_secret.
+MPESA_PASSKEY=your_passkey.
+MPESA_BUSINESS_SHORTCODE=your_shortcode.
+MPESA_CALLBACK_URL=https://yourdomain.com/callback.
 
 Install npm:
 
