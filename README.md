@@ -9,12 +9,7 @@ As more people move from print media to online media, auctioneer offers an alter
 ## Features
 
 Post your auction and the client can choose to view and attend the auction
-Daraja online payment provider platform has been intergrated allowing for m pesa payment
-
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Steve Kiplangat via hexenterprize@gmail.com. All security vulnerabilities will be promptly addressed.
+Daraja online payment provider platform has been intergrated allowing for m pesa payment.
 
 ## Development Setup
 
@@ -79,3 +74,7 @@ Navigate to: `http://127.0.0.1:8000`
 ![PaymentPage](https://github.com/HexTech254/auctioneer/blob/main/storage/images/payment_form.png)
 ## Responsive:
 ![Responsive](https://github.com/HexTech254/auctioneer/blob/main/storage/images/responsive.png)
+
+## Security Vulnerabilities
+
+If you discover a security vulnerability within Laravel, please send an e-mail to Steve Kiplangat via hexenterprize@gmail.com. All security vulnerabilities will be promptly addressed.
